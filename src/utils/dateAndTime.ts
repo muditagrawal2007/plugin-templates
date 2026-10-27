@@ -47,6 +47,37 @@ export class DateAndTimeUtils {
         return moment(ms).format(format);
     }
 
+    /**
+     * Formats the value of an HTML date input using the given format.
+     *
+     * An HTML `<input type="date">` always submits an ISO "yyyy-mm-dd" string,
+     * no matter which locale the browser or the user is using.
+     * `new Date("2026-07-07")` parses such a string as UTC midnight, so
+     * formatting it in local time moves the date back by one day for every
+     * timezone west of UTC. Parsing it as a local date instead keeps the day
+     * the user actually picked in the date picker.
+     */
+    public formatDateInput(input: string, format: string | null = null): string {
+        if (!format) {
+            format = this.getDateFormat();
+        }
+
+        const trimmedInput = input.trim();
+
+        const isoDate = moment(trimmedInput, "YYYY-MM-DD", true);
+        if (isoDate.isValid()) {
+            return this.formatMsToLocal(isoDate.valueOf(), format);
+        }
+
+        // Fall back to the generic parser for values that aren't an ISO date.
+        const parsedDate = new Date(trimmedInput);
+        if (Number.isNaN(parsedDate.getTime())) {
+            throw new Error(`Was not able to parse ${input} as a date`);
+        }
+
+        return this.formatMsToLocal(parsedDate.getTime(), format);
+    }
+
     public formatLocalToJoplinCompatibleUnixTime(input: string, format: string | null = null): number {
         if (!format) {
             format = this.getDateTimeFormat();

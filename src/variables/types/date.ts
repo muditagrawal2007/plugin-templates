@@ -6,8 +6,12 @@ export class DateCustomVariable extends CustomVariable {
     static definitionName = "date";
 
     public processInput(input: string, dateAndTimeUtils: DateAndTimeUtils): string {
-        const inputDate = new Date(input);
-        return dateAndTimeUtils.formatMsToLocal(inputDate.getTime(), dateAndTimeUtils.getDateFormat());
+        // The date input is empty when the user didn't pick a date at all.
+        if (!input.trim()) {
+            return "";
+        }
+
+        return dateAndTimeUtils.formatDateInput(input, dateAndTimeUtils.getDateFormat());
     }
 
     protected inputHTML(): string {
